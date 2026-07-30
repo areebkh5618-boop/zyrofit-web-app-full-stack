@@ -27,8 +27,8 @@ export default function Header({ products }: { products: ProductDTO[] }) {
 
   return (
     <>
-      <header className="sticky top-0 z-[200] h-[76px] border-b border-[var(--line-c)] bg-[var(--bg)] transition-colors duration-300">
-        <div className="mx-auto flex h-full max-w-[1280px] items-center justify-between gap-4 px-6 lg:px-10">
+      <header className="sticky top-0 z-[200] h-[64px] sm:h-[76px] border-b border-[var(--line-c)] bg-[var(--bg)] transition-colors duration-300">
+        <div className="mx-auto flex h-full max-w-[1280px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-10">
           <Link href="/" className="flex flex-shrink-0 items-center gap-2.5 font-display text-2xl tracking-wide">
             <span className="stripe" style={{ width: 18, height: 18, borderRadius: 3 }} />
             ZYROFIT

@@ -28,6 +28,12 @@ const jbmono = JetBrains_Mono({
   display: "swap",
 });
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+};
+
 export const metadata: Metadata = {
   title: {
     default: "ZyroFit — Premium Sports Apparel & Training Gear",

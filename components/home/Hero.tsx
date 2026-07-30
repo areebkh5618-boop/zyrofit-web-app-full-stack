@@ -3,14 +3,14 @@ import Image from "next/image";
 
 export default function Hero() {
   return (
-    <div className="relative flex min-h-[92vh] items-stretch overflow-hidden bg-zyro-black">
+    <div className="relative flex min-h-[auto] sm:min-h-[92vh] items-stretch overflow-hidden bg-zyro-black">
       <div className="grid w-full grid-cols-1 lg:grid-cols-[1fr_1.15fr]">
-        <div className="relative z-[3] flex flex-col justify-center gap-5 px-6 pb-20 pt-[140px] text-white lg:max-w-[560px] lg:px-10 lg:pt-0 xl:pl-0">
+        <div className="relative z-[3] flex flex-col justify-center gap-5 px-4 pb-12 pt-24 sm:px-6 sm:pb-20 sm:pt-[140px] text-white lg:max-w-[560px] lg:px-10 lg:pt-0 xl:pl-0">
           <div className="flex items-center gap-2.5 font-mono-ui text-xs uppercase tracking-[3px] text-zyro-green">
             <span className="stripe" style={{ width: 20, height: 4 }} />
             New Season Drop
           </div>
-          <h1 className="font-display text-[48px] leading-[0.92] text-white sm:text-[64px] lg:text-[80px] xl:text-[92px]">
+          <h1 className="font-display text-[clamp(36px,10vw,92px)] leading-[0.92] text-white">
             MOVE STRONG.
             <br />
             <em className="not-italic text-zyro-green">PERFORM</em> BETTER.

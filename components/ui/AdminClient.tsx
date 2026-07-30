@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ProductDTO, OrderDTO } from "@/lib/types";
 import { CATEGORIES, COLOR_HEX, SIZES_APPAREL, productImageUrl } from "@/lib/data";
@@ -35,11 +34,40 @@ export default function AdminClient({
   const [imageUrl, setImageUrl] = useState("");
   const [uploading, setUploading] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
+  const [editId, setEditId] = useState<string | null>(null);
 
   function toggle(set: Set<string>, setter: (s: Set<string>) => void, value: string) {
     const next = new Set(set);
     next.has(value) ? next.delete(value) : next.add(value);
     setter(next);
+  }
+
+  function startEdit(p: ProductDTO) {
+    setEditId(p.id);
+    setForm({
+      name: p.name,
+      category: p.category,
+      price: String(p.price),
+      oldPrice: p.oldPrice != null ? String(p.oldPrice) : "",
+      badge: p.badge || "",
+      description: p.description,
+    });
+    setSizes(new Set(p.sizes.length ? p.sizes : ["M"]));
+    setColors(new Set(p.colors.length ? p.colors : ["Black"]));
+    const img = p.imageUrl || productImageUrl(p.imageSeed, 200, 250, p.imageUrl);
+    setImageUrl(p.imageUrl || "");
+    setPreview(img);
+    setTab("products");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function cancelEdit() {
+    setEditId(null);
+    setForm(EMPTY_FORM);
+    setImageUrl("");
+    setPreview(null);
+    setSizes(new Set(["M", "L"]));
+    setColors(new Set(["Black"]));
   }
 
   async function onFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -64,37 +92,38 @@ export default function AdminClient({
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!imageUrl) {
+    if (!editId && !imageUrl) {
       show("Please upload a product image");
       return;
     }
     setSaving(true);
     try {
-      const res = await fetch("/api/products", {
-        method: "POST",
+      const payload = {
+        name: form.name,
+        category: form.category,
+        price: parseFloat(form.price),
+        oldPrice: form.oldPrice ? parseFloat(form.oldPrice) : null,
+        badge: form.badge || null,
+        description: form.description,
+        sizes: Array.from(sizes),
+        colors: Array.from(colors),
+        ...(imageUrl
+          ? { imageUrl, imageSeed: imageUrl }
+          : {}),
+      };
+
+      const res = await fetch(editId ? `/api/products/${editId}` : "/api/products", {
+        method: editId ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...form,
-          price: parseFloat(form.price),
-          oldPrice: form.oldPrice ? parseFloat(form.oldPrice) : null,
-          badge: form.badge || null,
-          imageUrl,
-          imageSeed: imageUrl,
-          sizes: Array.from(sizes),
-          colors: Array.from(colors),
-        }),
+        body: JSON.stringify(payload),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
-      show("Product created");
-      setForm(EMPTY_FORM);
-      setImageUrl("");
-      setPreview(null);
-      setSizes(new Set(["M", "L"]));
-      setColors(new Set(["Black"]));
+      if (!res.ok) throw new Error(data.error || "Failed");
+      show(editId ? "Product updated" : "Product created");
+      cancelEdit();
       router.refresh();
     } catch (err) {
-      show(err instanceof Error ? err.message : "Failed to create product");
+      show(err instanceof Error ? err.message : "Failed to save product");
     } finally {
       setSaving(false);
     }
@@ -105,6 +134,7 @@ export default function AdminClient({
     const res = await fetch(`/api/products/${id}`, { method: "DELETE" });
     if (res.ok) {
       show("Product deleted");
+      if (editId === id) cancelEdit();
       router.refresh();
     } else {
       show("Failed to delete product");
@@ -126,17 +156,17 @@ export default function AdminClient({
   }
 
   const inputClass =
-    "w-full rounded-lg border border-[var(--line-c)] bg-[var(--surface)] px-4 py-3 text-sm outline-none focus:border-zyro-blue";
+    "w-full rounded-lg border border-[var(--line-c)] bg-[var(--surface)] px-3 py-2.5 text-sm outline-none focus:border-zyro-blue sm:px-4 sm:py-3";
   const labelClass = "mb-1.5 block font-mono-ui text-xs uppercase tracking-wider text-[var(--ink-soft)]";
 
   return (
-    <div>
-      <div className="mb-8 flex gap-1 border-b border-[var(--line-c)]">
+    <div className="min-w-0">
+      <div className="mb-6 flex gap-1 overflow-x-auto border-b border-[var(--line-c)] sm:mb-8">
         {(["products", "orders"] as const).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`border-b-2 px-5 py-3 text-[13px] font-bold capitalize ${
+            className={`whitespace-nowrap border-b-2 px-4 py-3 text-[13px] font-bold capitalize sm:px-5 ${
               tab === t ? "border-zyro-blue text-[var(--ink)]" : "border-transparent text-[var(--ink-soft)]"
             }`}
           >
@@ -146,10 +176,23 @@ export default function AdminClient({
       </div>
 
       {tab === "products" && (
-        <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1fr_1.3fr]">
-          <div>
-            <h2 className="font-display mb-4.5 text-2xl">Add Product</h2>
-            <form onSubmit={onSubmit} className="space-y-3.5 rounded-2xl border border-[var(--line-c)] p-6">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_1.2fr] lg:gap-10">
+          <div className="min-w-0">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+              <h2 className="font-display text-xl sm:text-2xl">
+                {editId ? "Edit Product" : "Add Product"}
+              </h2>
+              {editId && (
+                <button
+                  type="button"
+                  onClick={cancelEdit}
+                  className="rounded border border-[var(--line-c)] px-3 py-1.5 text-xs font-bold"
+                >
+                  Cancel edit
+                </button>
+              )}
+            </div>
+            <form onSubmit={onSubmit} className="space-y-3.5 rounded-2xl border border-[var(--line-c)] p-4 sm:p-6">
               <div>
                 <label className={labelClass}>Name</label>
                 <input
@@ -159,7 +202,7 @@ export default function AdminClient({
                   className={inputClass}
                 />
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div>
                   <label className={labelClass}>Category</label>
                   <select
@@ -188,7 +231,7 @@ export default function AdminClient({
                   </select>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div>
                   <label className={labelClass}>Price ($)</label>
                   <input
@@ -213,19 +256,19 @@ export default function AdminClient({
               </div>
 
               <div>
-                <label className={labelClass}>Product Image</label>
+                <label className={labelClass}>Product Image {editId ? "(optional — leave to keep current)" : ""}</label>
                 <input
                   type="file"
                   accept="image/jpeg,image/png,image/webp,image/gif"
                   onChange={onFileChange}
                   disabled={uploading}
-                  className="w-full text-sm file:mr-3 file:rounded file:border-0 file:bg-zyro-black file:px-4 file:py-2 file:text-sm file:font-bold file:text-white"
+                  className="w-full max-w-full text-sm file:mr-3 file:rounded file:border-0 file:bg-zyro-black file:px-3 file:py-2 file:text-sm file:font-bold file:text-white"
                 />
+                <p className="mt-1 text-xs text-[var(--ink-soft)]">JPG / PNG / WEBP · max 2MB</p>
                 {uploading && <p className="mt-1 text-xs text-[var(--ink-soft)]">Uploading...</p>}
                 {preview && (
-                  <div className="mt-3 relative h-32 w-28 overflow-hidden rounded-lg border border-[var(--line-c)]">
-                    <Image src={preview} alt="Preview" fill className="object-cover" unoptimized />
-                  </div>
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={preview} alt="Preview" className="mt-3 h-32 w-28 rounded-lg border border-[var(--line-c)] object-cover" />
                 )}
               </div>
 
@@ -281,36 +324,47 @@ export default function AdminClient({
                 disabled={saving || uploading}
                 className="w-full rounded bg-zyro-black py-3.5 text-sm font-bold text-white disabled:opacity-50"
               >
-                {saving ? "Creating..." : "Create Product"}
+                {saving ? "Saving..." : editId ? "Update Product" : "Create Product"}
               </button>
             </form>
           </div>
 
-          <div>
-            <h2 className="font-display mb-4.5 text-2xl">Catalog ({products.length})</h2>
+          <div className="min-w-0">
+            <h2 className="font-display mb-4.5 text-xl sm:text-2xl">Catalog ({products.length})</h2>
             <div className="space-y-2.5">
               {products.map((p) => (
-                <div key={p.id} className="flex items-center gap-3.5 rounded-xl border border-[var(--line-c)] p-3">
-                  <Image
+                <div
+                  key={p.id}
+                  className={`flex flex-wrap items-center gap-3 rounded-xl border p-3 sm:flex-nowrap ${
+                    editId === p.id ? "border-zyro-blue" : "border-[var(--line-c)]"
+                  }`}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
                     src={productImageUrl(p.imageSeed, 100, 120, p.imageUrl)}
                     alt={p.name}
-                    width={48}
-                    height={58}
-                    className="rounded-md object-cover"
-                    unoptimized
+                    className="h-[58px] w-12 flex-shrink-0 rounded-md object-cover"
                   />
-                  <div className="flex-1">
-                    <b className="block text-sm">{p.name}</b>
+                  <div className="min-w-0 flex-1">
+                    <b className="block truncate text-sm">{p.name}</b>
                     <span className="font-mono-ui text-xs text-[var(--ink-soft)]">
                       ${p.price.toFixed(2)} · {p.category}
                     </span>
                   </div>
-                  <button
-                    onClick={() => onDelete(p.id)}
-                    className="rounded border border-[var(--line-c)] px-3 py-1.5 text-xs font-bold text-red-500 hover:border-red-500"
-                  >
-                    Delete
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => startEdit(p)}
+                      className="rounded border border-[var(--line-c)] px-3 py-1.5 text-xs font-bold hover:border-zyro-blue"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => onDelete(p.id)}
+                      className="rounded border border-[var(--line-c)] px-3 py-1.5 text-xs font-bold text-red-500 hover:border-red-500"
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -319,22 +373,22 @@ export default function AdminClient({
       )}
 
       {tab === "orders" && (
-        <div>
-          <h2 className="font-display mb-4.5 text-2xl">All Orders ({orders.length})</h2>
+        <div className="min-w-0">
+          <h2 className="font-display mb-4.5 text-xl sm:text-2xl">All Orders ({orders.length})</h2>
           {!orders.length ? (
             <p className="py-12 text-center text-[var(--ink-soft)]">No orders yet.</p>
           ) : (
             <div className="space-y-3">
               {orders.map((o) => (
-                <div key={o.id} className="rounded-xl border border-[var(--line-c)] p-4.5">
-                  <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                <div key={o.id} className="rounded-xl border border-[var(--line-c)] p-4">
+                  <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
                     <div>
                       <b className="font-mono-ui text-[13px]">#{o.id.slice(-8).toUpperCase()}</b>
                       <span className="ml-2 text-xs text-[var(--ink-soft)]">
                         {new Date(o.createdAt).toLocaleString()}
                       </span>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <span className="rounded-full bg-[var(--bg-alt)] px-2.5 py-1 font-mono-ui text-[11px] uppercase">
                         {o.paymentMethod === "cod" ? "COD" : "Card"}
                       </span>
@@ -352,11 +406,11 @@ export default function AdminClient({
                       <b className="font-mono-ui">${o.total.toFixed(2)}</b>
                     </div>
                   </div>
-                  <div className="text-sm text-[var(--ink-soft)]">
+                  <div className="text-sm text-[var(--ink-soft)] break-words">
                     {o.items.map((i) => `${i.name} ×${i.qty}`).join(", ")}
                   </div>
                   {o.shippingAddress && (
-                    <div className="mt-2 text-xs text-[var(--ink-soft)]">
+                    <div className="mt-2 text-xs text-[var(--ink-soft)] break-words">
                       Ship to: {o.shippingAddress.name}, {o.shippingAddress.address},{" "}
                       {o.shippingAddress.city} {o.shippingAddress.zip}
                     </div>
