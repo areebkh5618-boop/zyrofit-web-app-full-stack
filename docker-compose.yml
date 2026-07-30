@@ -1,0 +1,26 @@
+# ZyroFit — reliable production stack
+# App runs in Docker; MongoDB is MongoDB Atlas (cloud) so data is never lost on redeploy.
+#
+# Usage:
+#   1. Copy .env.example → .env and fill MONGODB_URI, JWT_SECRET, NEXT_PUBLIC_BASE_URL
+#   2. docker compose up -d --build
+#   3. Update code → docker compose up -d --build   (rolling restart, brief seconds)
+
+services:
+  web:
+    build: .
+    container_name: zyrofit-web
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 40s

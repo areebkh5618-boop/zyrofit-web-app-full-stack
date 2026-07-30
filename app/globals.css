@@ -1,0 +1,178 @@
+@import "tailwindcss";
+
+/* ============================= TAILWIND THEME TOKENS ============================= */
+@theme {
+  --color-zyro-blue: #007bff;
+  --color-zyro-blue-dim: #0066d6;
+  --color-zyro-black: #111111;
+  --color-zyro-green: #39ff14;
+  --color-zyro-fog: #f4f6f9;
+  --color-zyro-fog-2: #eaedf2;
+  --color-zyro-steel: #6b7280;
+  --color-zyro-line: #e4e7ec;
+}
+
+/* ============================= LIGHT / DARK TOKENS ============================= */
+:root {
+  --bg: #ffffff;
+  --bg-alt: #f4f6f9;
+  --surface: #ffffff;
+  --ink: #111111;
+  --ink-soft: #6b7280;
+  --line-c: #e4e7ec;
+  --shadow: 0 10px 30px -12px rgba(17, 17, 17, 0.18);
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+html.dark {
+  --bg: #0b0d10;
+  --bg-alt: #14171c;
+  --surface: #15181d;
+  --ink: #f4f6f9;
+  --ink-soft: #9aa3af;
+  --line-c: #262a31;
+}
+
+/* ============================= BASE ============================= */
+* {
+  box-sizing: border-box;
+}
+html {
+  scroll-behavior: smooth;
+}
+body {
+  font-family: var(--font-manrope), system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  transition: background 0.35s var(--ease), color 0.35s var(--ease);
+}
+::selection {
+  background: var(--color-zyro-green);
+  color: var(--color-zyro-black);
+}
+:focus-visible {
+  outline: 2px solid var(--color-zyro-blue);
+  outline-offset: 3px;
+}
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* ============================= TYPE HELPERS ============================= */
+.font-display {
+  font-family: var(--font-bebas), sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  line-height: 0.92;
+}
+.font-mono-ui {
+  font-family: var(--font-jbmono), monospace;
+}
+
+/* ============================= SIGNATURE: VELOCITY STRIPE ============================= */
+.stripe {
+  display: inline-block;
+  width: 34px;
+  height: 6px;
+  background: var(--color-zyro-green);
+  transform: skewX(-20deg);
+}
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-jbmono), monospace;
+  font-size: 12px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--color-zyro-blue);
+  font-weight: 600;
+}
+html.dark .eyebrow {
+  color: var(--color-zyro-green);
+}
+
+/* ============================= DUOTONE MEDIA ============================= */
+.media-duo {
+  position: relative;
+  overflow: hidden;
+  background: var(--bg-alt);
+}
+.media-duo img {
+  filter: grayscale(1) contrast(1.12) brightness(0.92);
+  transition: transform 0.6s var(--ease);
+}
+.media-duo::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(150deg, rgba(0, 123, 255, 0.55), rgba(17, 17, 17, 0.62));
+  mix-blend-mode: color;
+  pointer-events: none;
+}
+.media-duo.soft::after {
+  background: linear-gradient(150deg, rgba(0, 123, 255, 0.32), rgba(17, 17, 17, 0.4));
+}
+.media-duo:hover img {
+  transform: scale(1.06);
+}
+
+/* ============================= MARQUEE ============================= */
+.marquee-track {
+  display: flex;
+  gap: 60px;
+  white-space: nowrap;
+  width: max-content;
+  animation: marquee 22s linear infinite;
+}
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* ============================= SCROLL REVEAL ============================= */
+.reveal {
+  opacity: 0;
+  transform: translateY(26px);
+  transition: opacity 0.7s var(--ease), transform 0.7s var(--ease);
+}
+.reveal.in-view {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ============================= HIDE SCROLLBAR (horizontal carousels) ============================= */
+.scrollbar-thin::-webkit-scrollbar {
+  height: 6px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: var(--line-c);
+  border-radius: 10px;
+}
+
+/* ============================= BUTTON SWEEP ============================= */
+.btn-sweep {
+  position: relative;
+  overflow: hidden;
+  z-index: 0;
+}
+.btn-sweep::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  left: -100%;
+  background: var(--color-zyro-blue);
+  transform: skewX(-12deg);
+  transition: left 0.4s var(--ease);
+  z-index: -1;
+}
+.btn-sweep:hover::after {
+  left: -10%;
+}
