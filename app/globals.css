@@ -2,10 +2,10 @@
 
 /* ============================= TAILWIND THEME TOKENS ============================= */
 @theme {
-  --color-zyro-blue: #007bff;
-  --color-zyro-blue-dim: #0066d6;
+  --color-zyro-blue: #e11d48;
+  --color-zyro-blue-dim: #be123c;
   --color-zyro-black: #111111;
-  --color-zyro-green: #007bff;
+  --color-zyro-green: #e11d48;
   --color-zyro-fog: #f4f6f9;
   --color-zyro-fog-2: #eaedf2;
   --color-zyro-steel: #6b7280;

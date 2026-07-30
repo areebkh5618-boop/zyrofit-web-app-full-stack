@@ -3,24 +3,17 @@
 import Link from "next/link";
 import { ProductDTO } from "@/lib/types";
 import { catLabel, productImageUrl } from "@/lib/data";
-import { HeartIcon, StarIcon, BagIcon } from "@/components/ui/Icons";
-import { useWishlist } from "@/components/providers/WishlistContext";
+import { StarIcon, BagIcon, HeartIcon } from "@/components/ui/Icons";
 import { useCart } from "@/components/providers/CartContext";
 import { useToast } from "@/components/providers/ToastContext";
+import { useWishlist } from "@/components/providers/WishlistContext";
 
 export default function ProductCard({ product }: { product: ProductDTO }) {
-  const { has, toggle } = useWishlist();
   const { addItem } = useCart();
   const { show } = useToast();
+  const { has, toggle } = useWishlist();
   const wished = has(product.id);
   const imgSrc = productImageUrl(product.imageSeed, 600, 750, product.imageUrl);
-
-  function onToggleWishlist(e: React.MouseEvent) {
-    e.preventDefault();
-    e.stopPropagation();
-    const nowWishlisted = toggle(product.id);
-    show(nowWishlisted ? "Added to wishlist" : "Removed from wishlist");
-  }
 
   function onQuickAdd(e: React.MouseEvent) {
     e.preventDefault();
@@ -41,33 +34,41 @@ export default function ProductCard({ product }: { product: ProductDTO }) {
     show("Added to cart");
   }
 
+  function onWishlist(e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    const added = toggle(product.id);
+    show(added ? "Added to wishlist" : "Removed from wishlist");
+  }
+
   return (
     <div className="group flex flex-col overflow-hidden rounded-2xl border border-[var(--line-c)] bg-[var(--surface)] transition-all duration-300 hover:-translate-y-1 hover:border-transparent hover:shadow-[var(--shadow)]">
       <Link href={`/product/${product.slug}`} className="relative block aspect-[4/5] overflow-hidden bg-[var(--bg-alt)]">
+        <button
+          type="button"
+          onClick={onWishlist}
+          aria-label={wished ? "Remove from wishlist" : "Add to wishlist"}
+          className={`absolute right-2.5 top-2.5 z-20 flex h-9 w-9 items-center justify-center rounded-full border bg-[var(--surface)]/95 shadow-sm transition-all hover:scale-105 ${
+            wished ? "border-red-500 text-red-500" : "border-[var(--line-c)] text-[var(--ink)]"
+          }`}
+        >
+          <HeartIcon className={`h-4.5 w-4.5 ${wished ? "fill-current" : ""}`} />
+        </button>
+
         {product.badge && (
           <span
             className={`absolute left-2.5 top-2.5 z-10 rounded font-mono-ui text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 text-white ${
               product.badge === "Sale"
                 ? "bg-zyro-black"
                 : product.badge === "New"
-                  ? "bg-zyro-green !text-zyro-black"
-                  : "bg-zyro-blue"
+                  ? "bg-zyro-blue"
+                  : "bg-zyro-black"
             }`}
           >
             {product.badge}
           </span>
         )}
-        <button
-          onClick={onToggleWishlist}
-          aria-label="Toggle wishlist"
-          className="absolute right-2.5 top-2.5 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 transition-transform hover:scale-110 dark:bg-black/70"
-        >
-          <HeartIcon
-            className={`h-4 w-4 ${wished ? "fill-zyro-blue stroke-zyro-blue" : "stroke-zyro-black dark:stroke-white"}`}
-          />
-        </button>
 
-        {/* Native img = reliable on listing (works with data-URLs, /uploads, picsum) */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={imgSrc}
@@ -96,7 +97,7 @@ export default function ProductCard({ product }: { product: ProductDTO }) {
           {[0, 1, 2, 3, 4].map((i) => (
             <StarIcon
               key={i}
-              className={`h-3 w-3 ${i < Math.round(product.rating) ? "text-zyro-green" : "text-[var(--line-c)]"}`}
+              className={`h-3 w-3 ${i < Math.round(product.rating) ? "text-zyro-blue" : "text-[var(--line-c)]"}`}
             />
           ))}
           <span>({product.reviewsCount})</span>

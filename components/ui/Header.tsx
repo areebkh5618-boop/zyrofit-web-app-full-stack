@@ -9,7 +9,7 @@ import ThemeToggle from "@/components/ui/ThemeToggle";
 import CartDrawer from "@/components/ui/CartDrawer";
 import { useCart } from "@/components/providers/CartContext";
 import { useWishlist } from "@/components/providers/WishlistContext";
-import { BagIcon, HeartIcon, UserIcon, MenuIcon, CloseIcon } from "@/components/ui/Icons";
+import { BagIcon, UserIcon, MenuIcon, CloseIcon, HeartIcon } from "@/components/ui/Icons";
 
 const NAV_LINKS = [
   { href: "/", label: "Home" },
@@ -57,23 +57,23 @@ export default function Header({ products }: { products: ProductDTO[] }) {
             <SearchBox products={products} />
             <ThemeToggle />
             <Link
-              href="/dashboard"
-              aria-label="Account"
-              className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-[var(--bg-alt)]"
-            >
-              <UserIcon className="h-5 w-5" />
-            </Link>
-            <Link
               href="/wishlist"
               aria-label="Wishlist"
               className="relative flex h-10 w-10 items-center justify-center rounded-full hover:bg-[var(--bg-alt)]"
             >
               <HeartIcon className="h-5 w-5" />
               {wishlistIds.length > 0 && (
-                <span className="absolute right-0.5 top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-zyro-blue font-mono-ui text-[10px] font-bold text-white">
+                <span className="absolute right-0.5 top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 font-mono-ui text-[10px] font-bold text-white">
                   {wishlistIds.length}
                 </span>
               )}
+            </Link>
+            <Link
+              href="/dashboard"
+              aria-label="Account"
+              className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-[var(--bg-alt)]"
+            >
+              <UserIcon className="h-5 w-5" />
             </Link>
             <button
               onClick={() => setCartOpen(true)}
@@ -125,6 +125,16 @@ export default function Header({ products }: { products: ProductDTO[] }) {
               {link.label}
             </Link>
           ))}
+          <Link
+            href="/wishlist"
+            onClick={() => setMobileOpen(false)}
+            className="flex items-center justify-between border-b border-[var(--line-c)] py-4 text-lg font-bold"
+          >
+            Wishlist
+            {wishlistIds.length > 0 && (
+              <span className="rounded-full bg-red-500 px-2 py-0.5 font-mono-ui text-xs text-white">{wishlistIds.length}</span>
+            )}
+          </Link>
           <Link
             href="/dashboard"
             onClick={() => setMobileOpen(false)}

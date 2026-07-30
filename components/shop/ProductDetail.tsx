@@ -1,14 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ProductDTO } from "@/lib/types";
 import { COLOR_HEX, catLabel, productImageUrl } from "@/lib/data";
 import { useCart } from "@/components/providers/CartContext";
-import { useWishlist } from "@/components/providers/WishlistContext";
 import { useToast } from "@/components/providers/ToastContext";
-import { HeartIcon, StarIcon, BagIcon, TruckIcon, ShieldIcon, RefreshIcon, PlusIcon } from "@/components/ui/Icons";
+import { StarIcon, BagIcon, TruckIcon, ShieldIcon, RefreshIcon, PlusIcon } from "@/components/ui/Icons";
 
 const REVIEW_POOL = [
   { name: "A. Reyes", text: "Fit was exactly true to size — ordered my usual and it's perfect. Fabric feels premium, not flimsy like a lot of training gear." },
@@ -22,7 +20,6 @@ const THUMBS = ["a", "b", "c", "d"];
 export default function ProductDetail({ product }: { product: ProductDTO }) {
   const router = useRouter();
   const { addItem } = useCart();
-  const { has, toggle } = useWishlist();
   const { show } = useToast();
 
   const [thumb, setThumb] = useState(0);
@@ -31,7 +28,6 @@ export default function ProductDetail({ product }: { product: ProductDTO }) {
   const [qty, setQty] = useState(1);
   const [openSection, setOpenSection] = useState<"details" | "shipping" | "reviews">("details");
 
-  const wished = has(product.id);
 
   function handleAddToCart(redirectToCheckout = false) {
     addItem(
@@ -52,14 +48,12 @@ export default function ProductDetail({ product }: { product: ProductDTO }) {
   return (
     <div className="grid grid-cols-1 gap-12 py-12 md:grid-cols-2">
       <div>
-        <div className="media-duo relative mb-3.5 aspect-[4/5] overflow-hidden rounded-2xl">
-          <Image
+        <div className="relative mb-3.5 aspect-[4/5] overflow-hidden rounded-2xl bg-[var(--bg-alt)]">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
             src={product.imageUrl ? product.imageUrl : productImageUrl(`${product.imageSeed}-${THUMBS[thumb]}`, 700, 875)}
-            unoptimized
             alt={product.name}
-            fill
-            sizes="(max-width: 768px) 100vw, 50vw"
-            className="object-cover"
+            className="absolute inset-0 h-full w-full object-cover"
           />
         </div>
         <div className="flex gap-2.5">
@@ -71,7 +65,8 @@ export default function ProductDetail({ product }: { product: ProductDTO }) {
                 i === thumb ? "border-zyro-blue opacity-100" : "border-transparent opacity-60"
               }`}
             >
-              <Image src={product.imageUrl ? product.imageUrl : productImageUrl(`${product.imageSeed}-${t}`, 200, 250)} alt="thumbnail" fill className="object-cover" unoptimized />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={product.imageUrl ? product.imageUrl : productImageUrl(`${product.imageSeed}-${t}`, 200, 250)} alt="thumbnail" className="absolute inset-0 h-full w-full object-cover" />
             </button>
           ))}
         </div>
@@ -169,16 +164,6 @@ export default function ProductDetail({ product }: { product: ProductDTO }) {
             className="flex min-w-[160px] flex-1 items-center justify-center rounded bg-zyro-green px-7 py-4 text-sm font-bold text-zyro-black transition-transform hover:-translate-y-0.5"
           >
             Buy Now
-          </button>
-          <button
-            onClick={() => {
-              const now = toggle(product.id);
-              show(now ? "Added to wishlist" : "Removed from wishlist");
-            }}
-            aria-label="Toggle wishlist"
-            className="flex h-[52px] w-[52px] items-center justify-center rounded border border-[var(--line-c)]"
-          >
-            <HeartIcon className={`h-[18px] w-[18px] ${wished ? "fill-zyro-blue stroke-zyro-blue" : ""}`} />
           </button>
         </div>
 

@@ -13,7 +13,7 @@ export default function Newsletter() {
 
   return (
     <div className="relative overflow-hidden rounded-2xl bg-zyro-black p-9 text-white sm:p-14">
-      <div className="pointer-events-none absolute -right-[10%] -top-[40%] h-[340px] w-[340px] rounded-full bg-[radial-gradient(circle,rgba(57,255,20,0.25),transparent_70%)]" />
+      <div className="pointer-events-none absolute -right-[10%] -top-[40%] h-[340px] w-[340px] rounded-full bg-[radial-gradient(circle,rgba(239,68,68,0.28),transparent_70%)]" />
       <div className="relative flex flex-wrap items-center justify-between gap-7">
         <div>
           <h3 className="font-display text-[28px] sm:text-[38px]">Get 10% off your first order</h3>
@@ -24,9 +24,9 @@ export default function Newsletter() {
             type="email"
             required
             placeholder="Enter your email"
-            className="min-w-[240px] rounded border border-[#333] bg-[#1a1a1a] px-4.5 py-3.5 text-sm text-white outline-none focus:border-zyro-green"
+            className="min-w-[240px] rounded border border-[#333] bg-[#1a1a1a] px-4.5 py-3.5 text-sm text-white outline-none focus:border-red-500"
           />
-          <button type="submit" className="rounded bg-zyro-green px-7 py-3.5 text-sm font-bold text-zyro-black">
+          <button type="submit" className="rounded bg-red-500 px-7 py-3.5 text-sm font-bold text-white transition-colors hover:bg-red-600">
             Subscribe
           </button>
         </form>
